@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Taux Calculator – Mobile First</title>
+
+<style>
+/* ----------------------- */
+/*     MOBILE FIRST UI     */
+/* ----------------------- */
+
+body {
+    margin: 0;
+    padding: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial;
+    background: #f1f3f7;
+    color: #222;
+}
+
+h2 {
+    margin-top: 5px;
+    margin-bottom: 18px;
+    text-align: center;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.card {
+    background: white;
+    padding: 18px;
+    margin-bottom: 20px;
+    border-radius: 14px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+label {
+    display: block;
+    font-size: 15px;
+    font-weight: 600;
+    margin-top: 12px;
+}
+
+input {
+    width: 100%;
+    padding: 14px;
+    margin-top: 6px;
+    border-radius: 10px;
+    border: 1px solid #d0d0d0;
+    font-size: 16px;
+    background: #fafafa;
+}
+
+input:focus {
+    outline: none;
+    border-color: #2a7ae2;
+    background: #fff;
+    box-shadow: 0 0 5px rgba(42, 122, 226, 0.3);
+}
+
+/* RESULTS CARD */
+#output {
+    opacity: 0;
+    transition: opacity .25s;
+    font-size: 17px;
+    line-height: 1.6;
+}
+
+#output.show {
+    opacity: 1;
+}
+
+.result-title {
+    font-weight: 700;
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.big {
+    font-size: 22px;
+    font-weight: 700;
+    color: #2a7ae2;
+    margin: 8px 0;
+}
+
+/* DESKTOP IMPROVEMENTS */
+@media (min-width: 700px) {
+    body {
+        padding: 40px;
+    }
+
+    .layout {
+        max-width: 900px;
+        margin: auto;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+        align-items: start;
+    }
+
+    h2 {
+        text-align: left;
+        margin-left: 4px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="layout">
+
+<div class="card">
+    <h2>Price / Volume Calculator</h2>
+
+    <label>Price E85</label>
+    <input type="number" id="pE" step="0.001" value="0.675" oninput="calculate()">
+
+    <label>Volume E85</label>
+    <input type="number" id="vE" step="0.01" oninput="calculate()">
+
+    <label>Price Petrol</label>
+    <input type="number" id="pP" step="0.001" value="1.659" oninput="calculate()">
+
+    <label>Volume Petrol</label>
+    <input type="number" id="vP" step="0.01" oninput="calculate()">
+
+    <label>Moyen price (optional)</label>
+    <input type="number" id="pM" step="0.001" placeholder="auto if empty" oninput="calculate()">
+
+    <h3 style="margin-top:25px;">Taux</h3>
+
+    <label>Taux E (%)</label>
+    <input type="number" id="tauxE" step="1" value="75" oninput="calculate()">
+
+    <label>Taux P (%)</label>
+    <input type="number" id="tauxP" step="1" value="10" oninput="calculate()">
+
+    <label>Consumption (L/100km)</label>
+    <input type="number" id="cons" step="0.01" oninput="calculate()">
+</div>
+
+<!-- RIGHT CARD: RESULTS -->
+<div id="output" class="card"></div>
+
+</div>
+
+<script>
+function calculate() {
+    const g = id => parseFloat(document.getElementById(id).value) || 0;
+
+    const pE = g("pE"), vE = g("vE");
+    const pP = g("pP"), vP = g("vP");
+
+    const tpE = pE * vE;
+    const tpP = pP * vP;
+
+    const tvT = vE + vP;
+    const tpT = tpE + tpP;
+
+    // Moyen price (auto if empty)
+    let pMinput = parseFloat(document.getElementById("pM").value);
+    let pM = isNaN(pMinput) ? (tvT ? tpT / tvT : 0) : pMinput;
+
+    if (isNaN(pMinput) && tvT) {
+        document.getElementById("pM").value = pM.toFixed(3);
+    }
+
+    const tauxT = tvT === 0 ? 0 :
+        ((g("tauxE")/100)*vE + (g("tauxP")/100)*vP) / tvT;
+
+    const pkm = g("cons") * pM / 100;
+
+    // Build HTML
+    let html = `<div class="result-title">Results</div>`;
+
+    if (tpE) html += `E85 cost: <strong>${tpE.toFixed(2)}</strong><br>`;
+    if (tpP) html += `Petrol cost: <strong>${tpP.toFixed(2)}</strong><br><br>`;
+    if (tvT) html += `Total volume: <strong>${tvT.toFixed(2)}</strong><br>`;
+    if (tpT) html += `Total paid: <strong>${tpT.toFixed(2)}</strong><br><br>`;
+
+    if (pM) html += `<div class="big">Avg price: ${pM.toFixed(3)}</div>`;
+    if (tauxT) html += `Taux total: <strong>${(tauxT*100).toFixed(2)}%</strong><br><br>`;
+    if (pkm) html += `<div class="big">€/km: ${pkm.toFixed(2)}</div>`;
+
+    const out = document.getElementById("output");
+    out.innerHTML = html;
+    out.classList.add("show");
+}
+</script>
+
+</body>
+</html>

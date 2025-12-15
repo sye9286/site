@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Range / Conso / Reste Calculator</title>
+</head>
+<body>
+  <h2>Calculator</h2>
+  
+  <label>Range (km): </label>
+  <input type="number" id="range" step="any"><br><br>
+
+  <label>Conso (L/100km): </label>
+  <input type="number" id="conso" step="any"><br><br>
+
+  <label>Reste (L): </label>
+  <input type="number" id="reste" step="any"><br><br>
+
+  <button onclick="calculate()">Calculate</button>
+
+  <script>
+    function calculate() {
+      const rangeInput = document.getElementById('range');
+      const consoInput = document.getElementById('conso');
+      const resteInput = document.getElementById('reste');
+
+      const range = parseFloat(rangeInput.value);
+      const conso = parseFloat(consoInput.value);
+      const reste = parseFloat(resteInput.value);
+
+      const filled = [range, conso, reste].filter(v => !isNaN(v));
+
+      if (filled.length < 2) {
+        alert("Please fill in any **two** fields to calculate the third.");
+        return;
+      }
+
+      if (isNaN(range)) {
+        // range = (reste / conso) * 100
+        rangeInput.value = ((reste / conso) * 100).toFixed(2);
+      } else if (isNaN(conso)) {
+        // conso = (reste / range) * 100
+        consoInput.value = ((reste / range) * 100).toFixed(2);
+      } else if (isNaN(reste)) {
+        // reste = (range * conso) / 100
+        resteInput.value = ((range * conso) / 100).toFixed(2);
+      } else {
+        alert("Please leave **one** field empty to calculate it.");
+      }
+    }
+  </script>
+</body>
+</html>

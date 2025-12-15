@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Taux Calculator</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 40px;
+        background: #f5f5f5;
+    }
+
+    /* MAIN layout: inputs left, results right */
+    .layout {
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+        justify-content: center;
+    }
+
+    .container {
+        width: 360px;
+        padding: 20px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    input {
+        width: 100%;
+        padding: 10px;
+        margin: 5px 0 15px;
+        box-sizing: border-box;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+
+    button {
+        width: 100%;
+        padding: 10px;
+        background: #2a7ae2;
+        border: none;
+        color: white;
+        font-size: 16px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    button:hover {
+        background: #1d5bbf;
+    }
+
+    .result {
+        width: 260px;
+        background: #eef3ff;
+        padding: 15px;
+        border-radius: 5px;
+        display: none;
+    }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+    <!-- LEFT SIDE : INPUT FORM -->
+<div class="container">
+    <h2>Price/Volume Calculator</h2>
+    <!-- BLOCK 1: prices & volumes -->
+    <h3>Prices & Volumes</h3>    
+    <label>price E85</label>
+    <input type="number" id="pE" step="0.001" value="0.675">
+
+    <label>volume E85</label>
+    <input type="number" id="vE" step="0.01">
+
+    <label>price Petrol</label>
+    <input type="number" id="pP" step="0.001" value="1.659">
+
+    <label>volume Petrol</label>
+    <input type="number" id="vP" step="0.01">
+
+    <!-- USER CAN NOW ENTER A CUSTOM AVERAGE PRICE  -->
+        <label>moyen price</label>
+        <input type="number" id="pM" step="0.001">
+    
+    <!-- BLOCK 2: taux -->
+
+    <h3>Taux Calculation</h3>
+
+    <label>tauxE (%)</label>
+    <input type="number" id="tauxE" step="1" value="75">
+
+    <label>tauxP (%)</label>
+    <input type="number" id="tauxP" step="1" value="10">
+
+    <label>cons</label>
+    <input type="number" id="cons" step="0.01">
+
+    <button onclick="calculate()">Calculate</button>
+</div>
+
+    <!-- RIGHT SIDE : RESULT -->
+    <div id="output" class="result"></div>
+
+</div>
+
+
+<script>
+function calculate() {
+    const pE = parseFloat(document.getElementById("pE").value) || 0;
+    const vE = parseFloat(document.getElementById("vE").value) || 0;
+    const pP = parseFloat(document.getElementById("pP").value) || 0;
+    const vP = parseFloat(document.getElementById("vP").value) || 0;
+
+    const tpE = pE * vE;
+    const tpP = pP * vP;
+
+    const tvT = vE + vP;
+    const tpT = tpE + tpP;
+
+    // Check if user entered moyen price manually
+    let pM_input = parseFloat(document.getElementById("pM").value);
+
+    let pM;
+    if (!isNaN(pM_input)) {
+        // User provided a manual value
+        pM = pM_input;
+    } else {
+        // Auto-calc mean price
+        pM = tvT === 0 ? 0 : tpT / tvT;
+        document.getElementById("pM").value = pM.toFixed(3);
+    }
+
+    // Taux block
+    const tauxE = (parseFloat(document.getElementById("tauxE").value) || 0) / 100;
+    const tauxP = (parseFloat(document.getElementById("tauxP").value) || 0) / 100;
+    const cons = parseFloat(document.getElementById("cons").value) || 0;
+
+    const tauxT = tvT === 0 ? 0 : (tauxE * vE + tauxP * vP) / tvT;
+
+    const pkm = cons * pM / 100;
+
+    // ---- DYNAMIC RESULT BUILDING ----
+    let html = `<strong>Results</strong><br><br>`;
+
+    if (tpE !== 0) html += `pay E85 = ${tpE.toFixed(2)}<br>`;
+    if (tpP !== 0) html += `pay Petrol = ${tpP.toFixed(2)}<br><br>`;
+    
+    if (tvT !== 0) html += `total vol = ${tvT.toFixed(2)}<br>`;
+    if (tpT !== 0) html += `total price = ${tpT.toFixed(2)}<br><br>`;
+
+    if (pM !== 0) html += `<strong>moyen price = ${pM.toFixed(3)}</strong><br><br>`;
+
+    if (tauxT !== 0) html += `<u>Taux</u><br>tauxT = ${(tauxT * 100).toFixed(2)}%<br><br>`;
+
+    if (pkm !== 0) html += `<u>Final</u><br>pkm = ${pkm.toFixed(2)}<br>`;
+
+    document.getElementById("output").style.display = "block";
+    document.getElementById("output").innerHTML = html;
+
+    
+    // // Display results
+    // document.getElementById("output").style.display = "block";
+    // document.getElementById("output").innerHTML = `
+    //     <strong>Results:</strong><br><br>
+    //     pay E85 = ${tpE.toFixed(2)}<br>
+    //     pay Petrol = ${tpP.toFixed(2)}<br><br>
+
+    //     total vol = ${tvT.toFixed(2)}<br>
+    //     total price = ${tpT.toFixed(2)}<br><br>
+
+    //     <strong>moyen price = ${pM.toFixed(2)}</strong><br><br>
+    //     <u>Taux</u><br>
+    //     tauxT = ${(tauxT * 100).toFixed(2)}%<br><br>
+
+    //     <u>Final</u><br>
+    //     pkm = ${pkm.toFixed(2)}
+    // `;
+}
+</script>
+
+</body>
+</html>

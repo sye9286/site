@@ -1,0 +1,139 @@
+<style>
+body {
+    font-family: Arial;
+    margin: 40px;
+    background: #f0f0f5;
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: 360px 300px;
+    gap: 25px;
+    justify-content: center;
+}
+
+.container, .result {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+
+fieldset {
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    padding: 15px;
+}
+
+legend {
+    padding: 0 6px;
+    font-weight: bold;
+}
+
+input {
+    width: 100%;
+    padding: 8px;
+    margin: 8px 0 12px;
+    border-radius: 5px;
+    border: 1px solid #bbb;
+}
+
+.result-line {
+    margin-bottom: 8px;
+}
+
+.big-number {
+    font-size: 22px;
+    font-weight: bold;
+    color: #1d5bbf;
+}
+</style>
+
+<div class="layout">
+
+<div class="container">
+
+    <h2>Price / Volume Calculator</h2>
+
+    <fieldset>
+        <legend>Prices & Volumes</legend>
+
+        <label>E85 price</label>
+        <input type="number" id="pE" step="0.001" value="0.675">
+
+        <label>E85 volume</label>
+        <input type="number" id="vE" step="0.01">
+
+        <label>Petrol price</label>
+        <input type="number" id="pP" step="0.001" value="1.659">
+
+        <label>Petrol volume</label>
+        <input type="number" id="vP" step="0.01">
+
+        <label>Avg. price (optional)</label>
+        <input type="number" id="pM" step="0.001">
+    </fieldset>
+
+    <fieldset>
+        <legend>Taux</legend>
+
+        <label>taux E (%)</label>
+        <input type="number" id="tauxE" step="1" value="75">
+
+        <label>taux P (%)</label>
+        <input type="number" id="tauxP" step="1" value="10">
+
+        <label>Consumption</label>
+        <input type="number" id="cons" step="0.01">
+    </fieldset>
+
+    <button onclick="calculate()">Calculate</button>
+</div>
+
+<div id="output" class="result" style="display:none;"></div>
+
+</div>
+
+<script>
+const g = id => parseFloat(document.getElementById(id).value) || 0;
+
+function calculate() {
+    const pE = g("pE"), vE = g("vE");
+    const pP = g("pP"), vP = g("vP");
+
+    const tpE = pE * vE;
+    const tpP = pP * vP;
+
+    const tvT = vE + vP;
+    const tpT = tpE + tpP;
+
+    let pM = parseFloat(document.getElementById("pM").value);
+    if (isNaN(pM)) {
+        pM = tvT === 0 ? 0 : tpT / tvT;
+        document.getElementById("pM").value = pM.toFixed(3);
+    }
+
+    const tauxT = tvT === 0 ? 0 :
+        ((g("tauxE")/100) * vE + (g("tauxP")/100) * vP) / tvT;
+
+    const pkm = g("cons") * pM / 100;
+
+    let html = `<h3>Results</h3>`;
+
+    if (tpE) html += `<div class='result-line'>E85 cost: <strong>${tpE.toFixed(2)}</strong></div>`;
+    if (tpP) html += `<div class='result-line'>Petrol cost: <strong>${tpP.toFixed(2)}</strong></div>`;
+
+    if (tvT) html += `<div class='result-line'>Total volume: <strong>${tvT.toFixed(2)}</strong></div>`;
+    if (tpT) html += `<div class='result-line'>Total paid: <strong>${tpT.toFixed(2)}</strong></div>`;
+
+    html += `<hr>`;
+    if (pM) html += `<div class="big-number">Avg. price: ${pM.toFixed(3)}</div>`;
+    if (tauxT) html += `<div class="result-line">Taux total: ${(tauxT*100).toFixed(2)}%</div>`;
+    if (pkm) html += `<div class="result-line big-number">€/km: ${pkm.toFixed(2)}</div>`;
+
+    const out = document.getElementById("output");
+    out.style.display = "block";
+    out.innerHTML = html;
+}
+</script>
